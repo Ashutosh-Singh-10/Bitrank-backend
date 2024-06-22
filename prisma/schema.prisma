@@ -17,7 +17,8 @@ model User {
   id              Int             @id @default(autoincrement())
   username        String          @unique
   email           String          @unique
-  password        String
+  password        String?
+  googleId        String?         @unique
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   refreshTokens   RefreshToken[]
@@ -30,4 +31,3 @@ model RefreshToken {
   expiryDate DateTime
   user       User     @relation(fields: [userId], references: [id])
 }
-
