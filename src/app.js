@@ -1,7 +1,5 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const session = require('express-session'); // Add express-session
-const authRoutes = require('./routes/authRoutes'); // Import authRoutes
 const cors = require('cors');
 const passport = require('./config/passportConfig'); // Ensure you have the correct path
 require('dotenv').config();
@@ -15,11 +13,12 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(bodyParser.json());
+app.use(express.json());
+app.use(require('morgan')('dev'));
 
 // Add express-session middleware
 app.use(session({
-  secret: 'your_secret_key', // Replace with your own secret
+  secret: process.env.SESSION_SECRET, // Replace with your own secret
   resave: false,
   saveUninitialized: true,
 }));
@@ -28,10 +27,20 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/api/auth', authRoutes); // Mount authRoutes at /api/auth
+// Mounting Routes
+app.use('/api', require('./routes'));
 
+// Error Handler
+app.use((err, req, res, next)=>{
+  if (err) {
+    res.status(err.status||500).json({
+      error: err.message 
+    });
+  }
+})
+
+// Start Server
 const port = process.env.PORT || 3000;
-
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

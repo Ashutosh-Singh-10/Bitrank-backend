@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 datasource db {
-  provider = "sqlserver"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -14,20 +14,28 @@ generator client {
 }
 
 model User {
-  id              Int             @id @default(autoincrement())
-  username        String          @unique
-  email           String          @unique
-  password        String?
-  googleId        String?         @unique
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-  refreshTokens   RefreshToken[]
+  email         String    @id @unique
+  username      String    
+  password      String?
+  googleId      String?   @unique
+  verified      Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  refreshTokens RefreshToken[]
+  otp           OTP?
 }
 
 model RefreshToken {
-  id         Int      @id @default(autoincrement())
-  token      String
-  userId     Int
-  expiryDate DateTime
-  user       User     @relation(fields: [userId], references: [id])
+  email     String   @id
+  token     String   @unique
+  expiry    DateTime
+  user      User     @relation(fields: [email], references: [email])
+}
+
+model OTP {
+  email     String   @id
+  otp       Int
+  expiry    DateTime
+  user      User     @relation(fields: [email], references: [email])
 }
