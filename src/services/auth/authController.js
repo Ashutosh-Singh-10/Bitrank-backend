@@ -1,8 +1,8 @@
 const createError = require('http-errors');
 const { PrismaClient } = require('@prisma/client');
-const { sendOTPEmail } = require('../utils/mailer');
+const { sendOTPEmail, sendVerifyEmail } = require('../../utils/mailer');
 const prisma = new PrismaClient();
-const { generateAccessToken, generateRefreshToken, verifyAccess, verifyRefresh, hashPassword, verifyPassword } = require('../utils/jwt_n_hash');
+const { generateAccessToken, generateRefreshToken, verifyEmail, verifyRefresh, hashPassword, verifyPassword, generateEmailVerifyToken } = require('../../utils/jwt_n_hash');
 
 const register = async (req, res, next) => {
   const { username, email, password } = req.body;
@@ -21,9 +21,12 @@ const register = async (req, res, next) => {
         password: hashedPassword
       }
     });
-    
-    res.status(201).json({ message: 'User registered successfully' });
 
+    const verifyToken = generateEmailVerifyToken(email);
+    console.log("verifyEmail", verifyToken)
+    sendVerifyEmail(email, verifyToken);
+    
+    res.status(201).json({ message: 'User registered successfully. Please verify your email' });
   } catch (error) {
     if (error.code == "P2002") next(createError.BadRequest("User already Exists"))
     next(error)
@@ -202,6 +205,28 @@ const setPasswordOTP = async (req, res, next) => {
   }
 }
 
+const emailVerification = async (req, res, next) => {
+  console.log("En route ...")
+  try {
+    const { token } = req.params;
+
+    const decoded = verifyEmail(token);
+    
+    const user = await prisma.user.findUnique({ where: { email: decoded.email } });
+
+    if (!user) {
+      return next(createError.BadRequest('User not found'));
+    }
+
+    await prisma.user.update({ where: { email: decoded.email }, data: { verified: true } });
+
+    res.status(200).send("Email verified successfully");
+
+  } catch (error) {
+    next(error)
+  }
+}
+
 module.exports = {
-  register, login, refreshToken, changePassword, logout, forgotPassword, setPasswordOTP
+  register, login, refreshToken, changePassword, logout, forgotPassword, setPasswordOTP, emailVerification
 }

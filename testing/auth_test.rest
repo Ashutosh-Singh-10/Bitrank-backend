@@ -3,7 +3,7 @@ POST http://localhost:3000/api/auth/register
 Content-Type: application/json
 
 {
-    "username": "kush2709",
+    "username": "batman",
     "email": "kushagra.agarwal.2709@gmail.com",
     "password": "pass1234"
 }
@@ -14,8 +14,8 @@ POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-    "email": "kushagra.agarwal.2709@gmail.com",
-    "password": "pass1234"
+    "email": "daksheshgupta4@gmail.com",
+    "password": "Dakshesh"
 }
 
 ###
@@ -58,12 +58,22 @@ Content-Type: application/json
 
 {
     "email": "kushagra.agarwal.2709@gmail.com",
-    "otp": 576874,
-    "newPassword": "PassA123"
+    "otp": 794864,
+    "newPassword": "Noicee"
 }
+
+###
+
+GET http://localhost:3000/api/auth/verify-email/:token
+Content-Type: application/json
 
 ###
 
 GET http://localhost:3000/api/auth/test
 Content-Type: application/json
 Authorization: Bearer .eyJlbWFpbCI6Imt1c2guYWdhcndhbC4wMTJAZ21haWwuY29tIiwiaWF0IjoxNzIwNTU4NTg1LCJleHAiOjE3MjA1NTk0ODV9.nX0oZJTlBGugFw01z5DbYY-KurnU_SEgw82wMTU1qm8
+
+
+###
+
+GET http://localhost:3000/api/auth/verify/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imt1c2hhZ3JhLmFnYXJ3YWwuMjcwOUBnbWFpbC5jb20iLCJpYXQiOjE3MjA2MzgzMjN9.1D1FzOSJUHNPVtrs472yS4aIwUwjqddopSaTSLGamCI

@@ -1,7 +1,7 @@
 const express = require('express');
 const session = require('express-session'); // Add express-session
 const cors = require('cors');
-const passport = require('./config/passportConfig'); // Ensure you have the correct path
+const passport = require('./utils/gauth'); // Ensure you have the correct path
 require('dotenv').config();
 
 const app = express();
@@ -28,7 +28,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Mounting Routes
-app.use('/api', require('./routes'));
+app.use('/api', require('./serviceIndex'));
 
 // Error Handler
 app.use((err, req, res, next)=>{

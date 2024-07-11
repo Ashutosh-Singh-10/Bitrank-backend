@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlserver"
   url      = env("DATABASE_URL")
 }
 
@@ -15,7 +15,7 @@ generator client {
 
 model User {
   email         String    @id @unique
-  username      String    
+  username      String    @unique
   password      String?
   googleId      String?   @unique
   verified      Boolean   @default(false)

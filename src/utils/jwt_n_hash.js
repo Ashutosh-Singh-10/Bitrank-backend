@@ -19,6 +19,10 @@ const generateRefreshToken = async (user) => {
     return token;
 };
 
+const generateEmailVerifyToken = (email) => {
+    return jwt.sign({ email }, process.env.JWT_EMAIL_VERIFY_SECRET);
+}
+
 const verifyAccess = (token) => {
     return jwt.verify(token, process.env.JWT_ACCESS_SECRET)
 }
@@ -26,6 +30,10 @@ const verifyRefresh = (token) => {
     const res = jwt.verify(token, process.env.JWT_REFRESH_SECRET)
     console.log("RES : ", res)
     return res
+}
+
+const verifyEmail = (token) => {
+    return jwt.verify(token, process.env.JWT_EMAIL_VERIFY_SECRET)
 }
 
 // ----------
@@ -42,5 +50,5 @@ const verifyPassword = async (password, hashedPassword) => {
 // ----------
 
 module.exports = {
-    generateAccessToken, generateRefreshToken, verifyAccess, verifyRefresh, hashPassword, verifyPassword
+    generateAccessToken, generateRefreshToken, generateEmailVerifyToken, verifyAccess, verifyRefresh, verifyEmail, hashPassword, verifyPassword
 }
