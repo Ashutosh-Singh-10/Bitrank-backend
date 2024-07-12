@@ -22,8 +22,17 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+
+
   refreshTokens RefreshToken[]
   otp           OTP?
+
+
+  codeforces Codeforces?
+  leetcode Leetcode?
+  collegeName  String
+  college  College   @relation(fields: [collegeName], references: [collegeName])
+  
 }
 
 model RefreshToken {
@@ -38,4 +47,26 @@ model OTP {
   otp       Int
   expiry    DateTime
   user      User     @relation(fields: [email], references: [email])
+}
+
+model Codeforces{
+  username String @id
+  Rating Int 
+  Qns Int 
+  Ranking Int
+  email  String @unique
+  user User @relation(fields : [email],references:[email])
+}
+model Leetcode{
+  username String @id
+  Rating Int 
+  Qns Int 
+  Ranking Int
+  email  String @unique
+  user User @relation(fields : [email],references:[email])
+}
+
+model College{
+  collegeName String  @id 
+  user User[]
 }
