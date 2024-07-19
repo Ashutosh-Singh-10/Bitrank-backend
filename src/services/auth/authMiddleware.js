@@ -8,13 +8,15 @@ const authenticate = (req, res, next) => {
     
     if (!token) throw createError.Unauthorized("No token provided");
 
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
-
-    req.user = decoded;
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+      req.user = decoded;
+    }catch(error){
+      if (error.name == "JsonWebTokenError") next(createError.Unauthorized("Invalid token"));
+      if (error.name == "TokenExpiredError") next(createError.Unauthorized("Token expired"));
+    }
     next();
-    
-  }catch(error){
-    console.log(error)
+  } catch(error) {
     if (error.name == "JsonWebTokenError") next(createError.Unauthorized("Invalid token"));
     if (error.name == "TokenExpiredError") next(createError.Unauthorized("Token expired"));
     next(error)

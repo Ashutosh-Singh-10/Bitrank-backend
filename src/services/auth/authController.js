@@ -1,38 +1,46 @@
 const createError = require('http-errors');
 const { PrismaClient } = require('@prisma/client');
 const { sendOTPEmail, sendVerifyEmail } = require('../../utils/mailer');
+const passport = require('../../utils/gauth');
 const prisma = new PrismaClient();
 const { generateAccessToken, generateRefreshToken, verifyEmail, verifyRefresh, hashPassword, verifyPassword, generateEmailVerifyToken } = require('../../utils/jwt_n_hash');
 
-const register = async (req, res, next) => {
-  const { username, email, password } = req.body;
 
-  if (!username || !email || !password) {
+// Registration Handler
+const register = async (req, res, next) => {
+  const { username, email, password, collegeName } = req.body;
+  if (!username || !email || !password || !collegeName) {
     return next(createError.BadRequest("Missing required fields"));
   }
 
   try {
+    const userExists = await prisma.user.findUnique({ where: { email } });
+    if (userExists) throw createError.BadRequest("User already exists");
+    const collegeExists = await prisma.college.findUnique({ where: { collegeName } });
+    if (!collegeExists) throw createError.BadRequest("This College is not registered with us")
+
     const hashedPassword = await hashPassword(password);
 
     const user = await prisma.user.create({
       data: {
         username,
         email,
-        password: hashedPassword
+        password: hashedPassword,
+        collegeName
       }
     });
 
     const verifyToken = generateEmailVerifyToken(email);
-    console.log("verifyEmail", verifyToken)
     sendVerifyEmail(email, verifyToken);
     
     res.status(201).json({ message: 'User registered successfully. Please verify your email' });
+
   } catch (error) {
-    if (error.code == "P2002") next(createError.BadRequest("User already Exists"))
     next(error)
   }
 };
 
+// Login Handler
 const login = async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -44,18 +52,21 @@ const login = async (req, res, next) => {
     const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
-      return next(createError.NotFound('User not found'));
+      throw createError.NotFound('User not found');
     }
-
+    if (user.password == null) throw createError.BadRequest("User has not set password yet. Login using Google and set password")
     const validPassword = await verifyPassword(password, user.password);
     if (!validPassword) {
-      return next(createError.Unauthorized('Invalid password'));
+      throw createError.Unauthorized('Invalid password');
+    }
+    if (!user.verified) {
+      throw createError.Unauthorized("Please verify your email first")
     }
 
     const accessToken = generateAccessToken(user);
     const refreshToken = await generateRefreshToken(user);
 
-    res.json({ accessToken, refreshToken });
+    res.status(200).json({ accessToken, refreshToken });
 
   } catch (error) {
     next(error)
@@ -77,11 +88,9 @@ const refreshToken = async (req, res, next) => {
     if (!existingToken) throw next(createError.Unauthorized('Invalid refresh token'));
     
     const user = await prisma.user.findUnique({ where: { email: decoded.email } });
-
     const newAccessToken = generateAccessToken(user);
-    const newRefreshToken = await generateRefreshToken(user);
-
-    res.json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
+    
+    res.json({ accessToken: newAccessToken });
 
   } catch (error) {
     next(error);
@@ -160,11 +169,18 @@ const forgotPassword = async (req, res, next) => {
     if (!user || user.expiry < Date.now()) {
       otp = Math.floor(100000 + Math.random() * 900000);
       const expiry = new Date(Date.now() + 15 * 60 * 1000);
-      console.log(email, otp, expiry)
+      console.log("new OTP:", email, otp, expiry)
       
-      await prisma.oTP.create({ data: { 
-        email, otp, expiry
-      } });
+      if (!user){
+        await prisma.oTP.create({ data: { 
+          email, otp, expiry
+        } });
+      } else {
+        await prisma.oTP.update({
+          where:{email},
+          data: {email, otp, expiry}
+        })
+      }
 
     } else {
       otp = user.otp
@@ -173,7 +189,7 @@ const forgotPassword = async (req, res, next) => {
     sendOTPEmail(email, otp);
 
     res.status(200).json({
-      "message": "OTP SENT SUCCESSFULLY"
+      "message": "OTP sent successfully"
     })
   } catch(err){
     next(err)
@@ -189,7 +205,10 @@ const setPasswordOTP = async (req, res, next) => {
     const user = await prisma.oTP.findUnique({ where: { email } });
     
     if (!user) throw createError.BadRequest("No OTP found for this user, please try again")
-    if (user.otp !== otp || user.expiry < Date.now()) throw createError.BadRequest("Invalid OTP")
+
+    console.log("match :",user, otp, user.otp, user.expiry, Date.now(), user.otp != otp, user.expiry < Date.now(), user.otp !== otp || user.expiry < Date.now())
+
+    if (user.otp != otp || user.expiry < Date.now()) throw createError.BadRequest("Invalid OTP")
 
     await prisma.user.update({
       where: { email },
@@ -220,13 +239,40 @@ const emailVerification = async (req, res, next) => {
 
     await prisma.user.update({ where: { email: decoded.email }, data: { verified: true } });
 
-    res.status(200).send("Email verified successfully");
+    res.status(200).json({message:"Email verified successfully"});
 
   } catch (error) {
+    if (error.name == "TokenExpiredError" || error.name == "JsonWebTokenError") {
+      next(createError.BadRequest("This is not a valid verification URL"))
+    }
     next(error)
   }
 }
 
+const googleAuth = (req, res, next) => {
+  const callbackURL = req.query.callback || process.env.GOOGLE_CALLBACK_URL;
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    callbackURL: callbackURL,
+    state: callbackURL 
+  })(req, res, next);
+}
+
+const googleAuthCallBack = async (req, res) => {
+  const user = req.user;
+  if (!user) res.redirect(`${process.env.CLIENT_URL || ''}/login}`);
+  try {
+    const accessToken = generateAccessToken(user)
+    const refreshToken = await generateRefreshToken(user);
+    res.redirect(`${process.env.CLIENT_URL || ''}/login?accessToken=${accessToken}&refreshToken=${refreshToken}`);
+  } catch (err){
+    res.redirect(`${process.env.CLIENT_URL || ''}/login`);
+  }
+}
+
 module.exports = {
-  register, login, refreshToken, changePassword, logout, forgotPassword, setPasswordOTP, emailVerification
+  register, login, logout, refreshToken, 
+  changePassword, forgotPassword, setPasswordOTP, 
+  emailVerification, 
+  googleAuth, googleAuthCallBack
 }

@@ -20,7 +20,7 @@ passport.use('google', new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   callbackURL: process.env.GOOGLE_CALLBACK_URL,
-  passReqToCallback: true // This allows us to access the request object in the callback
+  passReqToCallback: true
 },
 async (req, accessToken, refreshToken, profile, done) => {
   try {
@@ -39,6 +39,7 @@ async (req, accessToken, refreshToken, profile, done) => {
         data: {
           username: profile.displayName,
           email: profile.emails[0].value,
+          collegeName: "CU",
           googleId: profile.id,
           verified: true
         }

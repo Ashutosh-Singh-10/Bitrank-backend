@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 datasource db {
-  provider = "sqlserver"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 

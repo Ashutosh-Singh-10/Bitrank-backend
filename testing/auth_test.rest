@@ -1,5 +1,5 @@
 
-POST http://localhost:3000/api/auth/register
+POST http://localhost:5000/api/auth/register
 Content-Type: application/json
 
 {
@@ -8,72 +8,74 @@ Content-Type: application/json
     "password": "pass1234"
 }
 
+
 ###
 
-POST http://localhost:3000/api/auth/login
+POST http://localhost:5000/api/auth/login
 Content-Type: application/json
 
 {
-    "email": "daksheshgupta4@gmail.com",
-    "password": "Dakshesh"
+    "email": "kushagra.agarwal.2709@gmail.com",
+    "password": "pass1234"
 }
 
 ###
 
-GET http://localhost:3000/api/auth/refresh
+POST http://localhost:5000/api/auth/refresh
 Content-Type: application/json
 
 {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imt1c2guYWdhcndhbC4wMTJAZ21haWwuY29tIiwiaWF0IjoxNzIwNTA3NTA2LCJleHAiOjE3MjExMTIzMDZ9.mXulad_guo7ZCZPhIoeTo2ycbQ625tL1mNwvUEpe3Y4"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imt1c2hhZ3JhLmFnYXJ3YWwuMjcwOUBnbWFpbC5jb20iLCJpYXQiOjE3MjExNjk2MzUsImV4cCI6MTcyMTc3NDQzNX0.BoiiOvI49K_P8TuSv6HKe-sKbb_ztcp7sKE1kBJCir4"
 }
 
 ###
 
-POST http://localhost:3000/api/auth/logout
+POST http://localhost:5000/api/auth/logout
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imt1c2guYWdhcndhbC4wMTJAZ21haWwuY29tIiwiaWF0IjoxNzIwNTA4NDAxLCJleHAiOjE3MjA1MDkzMDF9.1MWbaMhSRbuOErhxkv9BiyIlN2sKVzTJJrHvDv5aaiY
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imt1c2hhZ3JhLmFnYXJ3YWwuMjcwOUBnbWFpbC5jb20iLCJpYXQiOjE3MjExNjQ3MzgsImV4cCI6MTcyMTE2NTYzOH0.kga05O8Kg3pKmFmVhtnVyIQ8nUREIQ1-rTHUz246PPE
 
 {
-    "refreshToken": "lol.eyJlbWFpbCI6Imt1c2guYWdhcndhbC4wMTJAZ21haWwuY29tIiwiaWF0IjoxNzIwNTA4NDAxLCJleHAiOjE3MjExMTMyMDF9.K4cDpVFyuYnAa3xtCmXeS1sq49joTg8lNoJk_u-asJk"
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imt1c2hhZ3JhLmFnYXJ3YWwuMjcwOUBnbWFpbC5jb20iLCJpYXQiOjE3MjExNjYxNDAsImV4cCI6MTcyMTc3MDk0MH0.uoYNBHStBsF076czlpT9cxjvb4XEmd68AlZXkdJ4hIo"
 }
 
 ###
 
-GET http://localhost:3000/api/auth/google
+GET http://localhost:5000/api/auth/google
 Content-Type: application/json
 
 ###
 
-POST http://localhost:3000/api/auth/forgot-password
+POST http://localhost:5000/api/auth/forgot-password
 Content-Type: application/json
 
 {
     "email": "kushagra.agarwal.2709@gmail.com"
 }
 
+
 ###
 
-POST http://localhost:3000/api/auth/set-password-otp 
+POST http://localhost:5000/api/auth/set-password-otp 
 Content-Type: application/json
 
 {
     "email": "kushagra.agarwal.2709@gmail.com",
-    "otp": 794864,
+    "otp": 933978,
     "newPassword": "Noicee"
 }
 
 ###
 
-GET http://localhost:3000/api/auth/verify-email/:token
+GET http://localhost:5000/api/auth/verify-email/:token
 Content-Type: application/json
 
 ###
 
-GET http://localhost:3000/api/auth/test
+GET http://localhost:5000/api/auth/test
 Content-Type: application/json
 Authorization: Bearer .eyJlbWFpbCI6Imt1c2guYWdhcndhbC4wMTJAZ21haWwuY29tIiwiaWF0IjoxNzIwNTU4NTg1LCJleHAiOjE3MjA1NTk0ODV9.nX0oZJTlBGugFw01z5DbYY-KurnU_SEgw82wMTU1qm8
 
 
 ###
 
-GET http://localhost:3000/api/auth/verify/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imt1c2hhZ3JhLmFnYXJ3YWwuMjcwOUBnbWFpbC5jb20iLCJpYXQiOjE3MjA2MzgzMjN9.1D1FzOSJUHNPVtrs472yS4aIwUwjqddopSaTSLGamCI
+GET http://localhost:5000/api/auth/verify/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imt1c2hhZ3JhLmFnYXJ3YWwuMjcwOUBnbWFpbC5jb20iLCJpYXQiOjE3MjExNjYxMzV9.xPBra83C8zzMO41haO9ZC6B3JAEaJGoX2hnSP8CYOZY

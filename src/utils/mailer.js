@@ -125,6 +125,8 @@ async function sendOTPEmail(email, otp) {
 }
 
 const sendVerifyEmail = async (email, token) => {
+
+  const address = `${process.env.CLIENT_URL}/email-verify/${token}`
   
   const subject = 'Bitrank Email Verification';
   
@@ -167,7 +169,9 @@ const sendVerifyEmail = async (email, token) => {
         <h2>BitRank Email Verification</h2>
         <p>Hello user,</p>
         <p>Please click on the below link to verify your email</p>
-        <div class="otp" ><a href="${process.env.CLIENT_URL}/verify-email?token=${token}">Verify Email</a></div>
+        <div class="otp" ><a href="${address}">Verify Email</a></div>
+        <div>or use the link below </div>
+        <div><a href="${address}">${address}</a></div>
         <p>Please do not share it with anyone.</p>
         <p>If you didn't request this email, please don't follow the link.</p>
         <p>Best regards,<br>BitRank</p>
@@ -180,9 +184,8 @@ const sendVerifyEmail = async (email, token) => {
   const textContent = `
     Hello user,
 
-    Your email verification link is as below
-
-    https://${process.env.CLIENT_URL}/verify-email?token=${token}
+    Your email verification link is as below :
+    ${address}
 
     Please do not share it with anyone.
 
