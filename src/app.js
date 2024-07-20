@@ -1,8 +1,9 @@
 const express = require('express');
 const session = require('express-session'); // Add express-session
 const cors = require('cors');
-const passport = require('./utils/gauth'); // Ensure you have the correct path
 require('dotenv').config();
+
+const passport = require('./utils/gauth'); // Ensure you have the correct path
 
 const app = express();
 
