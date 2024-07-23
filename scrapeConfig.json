@@ -1,0 +1,48 @@
+{
+    "urlTemplate": "https://leetcode.com/u/{1}",
+    "vars":[["leftshifted"], ["amans58402"], ["Homie_Lander7"]],
+    "xpaths": [
+      {
+        "id": "name",
+        "xpath": "/html/body/div[1]/div[1]/div[4]/div/div[1]/div/div[1]/div[1]/div[2]/div[1]/div",
+        "format": "text"
+      },
+      {
+        "id": "rank",
+        "xpath": "/html/body/div[1]/div[1]/div[4]/div/div[2]/div[1]/div[1]/div/div[1]/div/div[-2]/div[2]", 
+        "format": "text",
+        "transformations": ["parseSlash"]
+      },
+      {
+        "id": "rating",
+        "xpath": "/html/body/div[1]/div[1]/div[4]/div/div[2]/div[1]/div[1]/div/div[1]/div/div[1]/div[2]",
+        "format": "text"
+      },
+      {
+        "id": "maxRating",
+        "xpath": "//g[contains(@class, 'highcharts-annotation-labels')]//text[@data-z-index='1']",
+        "format": "text"
+      },
+      {
+        "id": "top",
+        "xpath": "/html/body/div[1]/div[1]/div[4]/div/div[2]/div[1]/div[3]/div/div[1]/div[1]/div[2]",
+        "format": "text"
+      },
+      {
+        "id": "problems",
+        "xpath": "/html/body/div[1]/div[1]/div[4]/div/div[2]/div[3]/div[1]/div/div/div[2]",
+        "format": "list",
+        "subXpaths": [
+          {
+            "id": "label",
+            "xpath": "./div[1]"
+          },
+          {
+            "id": "value",
+            "xpath": "./div[2]",
+            "transformations": ["parseSlash"]
+          }
+        ]
+      }
+    ]
+}
