@@ -3,15 +3,6 @@ const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 
 puppeteer.use(StealthPlugin());
 
-const TRANSFORMATIONS = {
-    toUpperCase: (data) => data.toUpperCase(),
-    parseInt: (data) => parseInt(data, 10),
-    parseSlash: (data) => {
-        const [first] = String(data).split('/');
-        return parseInt(first.replace(',', ''), 10);
-    }
-};
-
 function adjustNegativeIndexXPath(xpath) {
     return xpath.replace(/(\w+)\[(-\d+)\]/g, (match, element, index) => {
         return `${element}[last()${parseInt(index) + 1}]`;
@@ -41,7 +32,7 @@ async function scrape(config) {
         });
 
         try {
-            await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
+            await page.goto(url, { waitUntil: 'networkidle2', timeout: 0 });
 
             const adjustedXpaths = xpaths.map(xpath => ({
                 ...xpath,
@@ -52,18 +43,36 @@ async function scrape(config) {
                 })) : undefined
             }));
 
-            const pageData = await page.evaluate((xpaths, TRANSFORMATIONS) => {
+            const pageData = await page.evaluate((xpaths) => {
+
                 function applyTransformations(data, transformations) {
                     if (!transformations || transformations.length === 0) return data;
-                    return transformations.reduce((acc, transformName) => {
-                        return TRANSFORMATIONS[transformName] ? TRANSFORMATIONS[transformName](acc) : acc;
-                    }, data);
+
+                    const TRANSFORMS = {
+                        toUpperCase: (data) => data.toUpperCase(),
+                        parseInt: (data) => parseInt(String(data).replace(',', ''), 10),
+                        parseSlash: (data) => {
+                            const [first] = String(data).split('/');
+                            return parseInt(first.replace(',', ''), 10);
+                        },
+                        extractNumber: (svgString) => {
+                            const regex = /<text[^>]*>(\d{1,5})<\/text>/;
+                            const match = svgString.match(regex);
+                            return match ? match[1] : null;
+                        }
+                    }
+                    
+                    for (const transformation of transformations) {
+                        if (typeof TRANSFORMS[transformation] !== 'function') continue;
+                        data = TRANSFORMS[transformation](data);
+                    }
+                    return data;
                 }
 
                 function extractData(element, format, subXpaths, transformations) {
                     let data;
                     if (format === 'text') {
-                        data = element.innerText.trim();
+                        data = element.innerHTML;
                         return applyTransformations(data, transformations);
                     } else if (format === 'list') {
                         return Array.from(element.children).map(child => {
@@ -89,15 +98,18 @@ async function scrape(config) {
                     for (let i = 0; i < elements.snapshotLength; i++) {
                         data.push(extractData(elements.snapshotItem(i), format, subXpaths || [], transformations));
                     }
-                    result[id] = data.length === 1 ? data[0] : data;
+                    data = data.length === 1 ? data[0] : data
+                    result[id] = data;
                 });
                 return result;
-            }, adjustedXpaths, TRANSFORMATIONS);
+
+            }, adjustedXpaths);
 
             results.push({
                 id: variableSet.length === 1 ? variableSet[0] : variableSet,
                 data: pageData
             });
+
         } catch (error) {
             console.error(`Error scraping ${url}:`, error);
             results.push({
@@ -130,12 +142,13 @@ const getProfile = async (uid) => {
           {
             "id": "rating",
             "xpath": "/html/body/div[1]/div[1]/div[4]/div/div[2]/div[1]/div[1]/div/div[1]/div/div[1]/div[2]",
-            "format": "text"
+            "format": "text",
+            "transformations": ["parseInt"]
           },
           {
             "id": "maxRating",
-            "xpath": "//g[contains(@class, 'highcharts-annotation-labels')]//text[@data-z-index='1']",
-            "format": "text"
+            "xpath": "/html/body/div[1]/div[1]/div[4]/div/div[2]/div[1]/div[1]/div/div[2]/div/div/svg",
+            "format": "text",
           },
           {
             "id": "top",
@@ -162,13 +175,14 @@ const getProfile = async (uid) => {
           }
         ]
     }
+    
     const res = await scrape(PROFILE_CONFIG)
-    console.log("res:", JSON.stringify(res))
+    console.log("res :",res)
     return res
 }
 
 async function main() {
-    console.log(await getProfile('leftshifted'))
+    getProfile('leftshifted')
 }
 
 if (require.main === module) {
